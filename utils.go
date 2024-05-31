@@ -12,6 +12,8 @@
 
 package main
 
+import "github.com/gin-gonic/gin"
+
 func isInSlice(str string, list []string) bool {
 	for _, item := range list {
 		if item == str {
@@ -23,4 +25,12 @@ func isInSlice(str string, list []string) bool {
 
 func stringPtr(s string) *string {
 	return &s
+}
+
+// SetMessageChan sets the message channel in the context
+func SetMessageChan(ch chan string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set("chan", ch)
+	}
+
 }

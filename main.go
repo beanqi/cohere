@@ -180,6 +180,17 @@ func cohereRequest(c *gin.Context, openAIReq OpenAIRequest) {
 }
 
 func cohereNonStreamRequest(c *gin.Context, openAIReq OpenAIRequest) {
+	contextCh, exist := c.Get("chan")
+	if !exist {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "missing message channel"})
+		return
+	}
+	ch, ok := contextCh.(chan string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid message channel"})
+		return
+	}
+
 	apiKey, err := parseAuthorizationHeader(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -256,7 +267,7 @@ func cohereNonStreamRequest(c *gin.Context, openAIReq OpenAIRequest) {
 			FinishReason: stringPtr("stop"),
 		},
 	}
-
+	ch <- fmt.Sprintf("{\"question\": \"%s\", \"answer\": \"%s\"}", cohereReq.Message, cohereResp.Text)
 	c.JSON(http.StatusOK, aiResp)
 }
 
@@ -322,7 +333,10 @@ func main() {
 	fmt.Println("Running on port " + port + "\nHave fun with Cohere2OpenAI!")
 
 	gin.SetMode(gin.ReleaseMode)
+	ch := make(chan string) // Create a channel to store messages
+	WriteFromChannel(ch)    // Start writing messages to a file
 	r := gin.Default()
+	r.Use(SetMessageChan(ch))
 	r.Use(cors.Default())
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
