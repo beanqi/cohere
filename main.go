@@ -267,7 +267,7 @@ func cohereNonStreamRequest(c *gin.Context, openAIReq OpenAIRequest) {
 			FinishReason: stringPtr("stop"),
 		},
 	}
-	ch <- fmt.Sprintf("{\"question\": \"%s\", \"answer\": \"%s\"}", cohereReq.Message, cohereResp.Text)
+	ch <- fmt.Sprintf("{\"question\": \"%s\", \"answer\": \"%s\"}", escapeString(cohereReq.Message), escapeString(cohereResp.Text))
 	c.JSON(http.StatusOK, aiResp)
 }
 
