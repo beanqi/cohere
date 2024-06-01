@@ -304,7 +304,9 @@ func handler(c *gin.Context) {
 	}
 
 	if openAIReq.Stream {
-		cohereRequest(c, openAIReq)
+		//cohereRequest(c, openAIReq)
+		// 暂不支持流式输出
+		c.JSON(http.StatusBadRequest, gin.H{"error": "streaming is not supported"})
 	} else {
 		cohereNonStreamRequest(c, openAIReq)
 	}
